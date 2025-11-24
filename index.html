@@ -396,6 +396,7 @@ let lives = 3;
 let totalStart = 0;
 let totalEnd = 0;
 let playerWon = false;
+let alreadySaved = false;
 
 /* elements */
 const menuView = document.getElementById('menuView');
@@ -601,17 +602,30 @@ function getRankingKey() {
 }
 
 function saveScore() {
-  if (!playerWon) return;
-  const name = (playerNameInput.value || "Anon").trim().slice(0, 20);
-  const time = getTotalTime();
+  if (!playerWon) return; // só salva quem zerou
 
-  saveOnlineScore(mode, name, time);
+  // 🔒 Se já salvou nesta partida, não deixa repetir
+  if (alreadySaved) {
+    saveBtn.textContent = "Já salvo ✓";
+    return;
+  }
 
-  saveBtn.textContent = "Salvo ✓";
-  setTimeout(() => saveBtn.textContent = "Salvar", 1200);
+  const name = (playerNameInput.value || 'Anon').trim().slice(0,20);
+  if (!name) return;
 
-  renderRanking();
-}
+  // ranking separado por modo
+  const key = (mode === 'normal') ? 'punnett_ranking_normal' : 'punnett_ranking_hard';
+
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push({ name, time: getTotalTime() });
+  list.sort((a,b)=> a.time - b.time);
+  localStorage.setItem(key, JSON.stringify(list));
+
+  alreadySaved = true; // 🔒 trava após o primeiro salvamento
+  saveBtn.textContent = 'Salvo ✓';
+
+  setTimeout(()=> saveBtn.textContent = 'Salvar', 1200);
+  }
 
 /* render ranking (Firebase) */
 function renderRanking() {
