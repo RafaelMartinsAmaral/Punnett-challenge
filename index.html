@@ -601,31 +601,32 @@ function getRankingKey() {
     : 'punnett_ranking_normal';
 }
 
-function saveScore() {
-  if (!playerWon) return; // só salva quem zerou
+function saveScore(){
+    if(!playerWon) return; // só salva quem terminou tudo
 
-  // 🔒 Se já salvou nesta partida, não deixa repetir
-  if (alreadySaved) {
-    saveBtn.textContent = "Já salvo ✓";
-    return;
-  }
+    const name = (playerNameInput.value || 'Anon').trim().slice(0,20);
+    if(!name) return;
 
-  const name = (playerNameInput.value || 'Anon').trim().slice(0,20);
-  if (!name) return;
+    // ranking separado por modo
+    const key = (mode === 'normal')
+      ? 'punnett_ranking_normal'
+      : 'punnett_ranking_hard';
 
-  // ranking separado por modo
-  const key = (mode === 'normal') ? 'punnett_ranking_normal' : 'punnett_ranking_hard';
+    // ---- SALVAR LOCAL ----
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    list.push({ name, time: getTotalTime() });
 
-  const list = JSON.parse(localStorage.getItem(key) || '[]');
-  list.push({ name, time: getTotalTime() });
-  list.sort((a,b)=> a.time - b.time);
-  localStorage.setItem(key, JSON.stringify(list));
+    list.sort((a,b)=> a.time - b.time);
+    localStorage.setItem(key, JSON.stringify(list));
 
-  alreadySaved = true; // 🔒 trava após o primeiro salvamento
-  saveBtn.textContent = 'Salvo ✓';
+    // ---- SALVAR ONLINE ----
+    saveOnlineScore(mode, name, getTotalTime());
 
-  setTimeout(()=> saveBtn.textContent = 'Salvar', 1200);
-  }
+    renderRanking();
+
+    saveBtn.textContent = 'Salvo ✓';
+    setTimeout(()=> saveBtn.textContent = 'Salvar', 1200);
+                              }
 
 /* render ranking (Firebase) */
 function renderRanking() {
@@ -686,11 +687,18 @@ function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&am
   /* ========= FUNÇÕES DE RANKING GLOBAL ========= */
 
   // Salvar score no ranking
-  function saveOnlineScore(mode, name, time) {
-    db.ref("ranking/" + mode).push({
-      name: name,
-      time: time,
-      timestamp: Date.now()
+  function saveOnlineScore(mode, name, time){
+    const db = getDatabase();
+
+    const refKey = (mode === 'normal')
+      ? 'ranking_normal'
+      : 'ranking_hard';
+
+    const newRef = push(ref(db, refKey));
+
+    set(newRef, {
+        name: name,
+        time: time
     });
   }
 
