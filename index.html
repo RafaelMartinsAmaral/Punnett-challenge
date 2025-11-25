@@ -602,17 +602,21 @@ function getRankingKey() {
 
 function saveScore() {
   if (!playerWon) return;
-  const name = (playerNameInput.value || "Anon").trim().slice(0, 20);
+
+  let name = playerNameInput?.value?.trim();
+
+  if (!name) {
+    alert("Digite seu nome antes de salvar.");
+    return;
+  }
+
+  name = name.slice(0, 20);
   const time = getTotalTime();
 
   saveOnlineScore(mode, name, time);
 
-  saveBtn.textContent = "Salvo ✓";
-  setTimeout(() => saveBtn.textContent = "Salvar", 1200);
   saveBtn.style.display = "none";
-
-  renderRanking();
-}
+  }
 
 /* render ranking (Firebase) */
 function renderRanking() {
