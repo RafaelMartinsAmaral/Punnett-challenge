@@ -601,22 +601,18 @@ function getRankingKey() {
 }
 
 function saveScore() {
-  if (!playerWon) return;
+if (!playerWon) return;
+const name = (playerNameInput.value || "Anon").trim().slice(0, 20);
+const time = getTotalTime();
 
-  let name = playerNameInput.value.trim();
-  if (!name) name = "Anon";
+saveOnlineScore(mode, name, time);
 
-  name = name.slice(0, 20);
-  const time = getTotalTime();
+saveBtn.textContent = "Salvo ✓";
+setTimeout(() => saveBtn.textContent = "Salvar", 1200);
+saveBtn.style.display = "none";
 
-  saveOnlineScore(mode, name, time);
-
-  saveBtn.textContent = "Salvo ✓";
-  saveBtn.style.display = "none";
-
-  renderRanking();
+renderRanking();
   }
-
 /* render ranking (Firebase) */
 function renderRanking() {
   loadOnlineRanking(mode, (list) => {
