@@ -662,4 +662,37 @@ function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&am
     storageBucket: "punnnet-challenge.firebasestorage.app",
     messagingSenderId: "476402325418",
     appId: "1:476402325418:web:2fb6f04441195d76893dd3",
-    measu
+    measurementId: "G-160BZTNGDT"
+  };
+
+  // Inicializa o Firebase usando versão compat
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  /* ========= FUNÇÕES DE RANKING GLOBAL ========= */
+
+  // Salvar score no ranking
+  function saveOnlineScore(mode, name, time) {
+    db.ref("ranking/" + mode).push({
+      name: name,
+      time: time,
+      timestamp: Date.now()
+    });
+  }
+
+  // Ler ranking global
+  function loadOnlineRanking(mode, callback) {
+    db.ref("ranking/" + mode)
+      .orderByChild("time")
+      .limitToFirst(10)
+      .once("value", (snapshot) => {
+        const list = [];
+        snapshot.forEach((child) => {
+          list.push(child.val());
+        });
+        callback(list);
+      });
+  }
+</script>
+</body>
+</html>
