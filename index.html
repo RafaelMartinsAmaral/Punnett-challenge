@@ -601,32 +601,27 @@ function getRankingKey() {
     : 'punnett_ranking_normal';
 }
 
-function saveScore(){
-    if(!playerWon) return; // só salva quem terminou tudo
+let scoreSaved = false;
 
-    const name = (playerNameInput.value || 'Anon').trim().slice(0,20);
-    if(!name) return;
+function saveScore() {
+    if (!playerWon) return;          // só salva se zerou
+    if (scoreSaved) return;          // impede salvar duas vezes
 
-    // ranking separado por modo
-    const key = (mode === 'normal')
-      ? 'punnett_ranking_normal'
-      : 'punnett_ranking_hard';
+    const name = (playerNameInput.value || 'Anônimo').trim().slice(0, 20);
+    if (!name) return;
 
-    // ---- SALVAR LOCAL ----
-    const list = JSON.parse(localStorage.getItem(key) || '[]');
-    list.push({ name, time: getTotalTime() });
+    const time = getTotalTime();
 
-    list.sort((a,b)=> a.time - b.time);
-    localStorage.setItem(key, JSON.stringify(list));
-
-    // ---- SALVAR ONLINE ----
-    saveOnlineScore(mode, name, getTotalTime());
-
-    renderRanking();
-
-    saveBtn.textContent = 'Salvo ✓';
-    setTimeout(()=> saveBtn.textContent = 'Salvar', 1200);
-                              }
+    // Salva no FIREBASE (modo normal / difícil separados)
+    saveScoreToFirebase(mode, name, time)
+        .then(() => {
+            scoreSaved = true;
+            saveBtn.textContent = "Salvo ✓";
+        })
+        .catch(err => {
+            console.error("Erro ao salvar:", err);
+        });
+  }
 
 /* render ranking (Firebase) */
 function renderRanking() {
