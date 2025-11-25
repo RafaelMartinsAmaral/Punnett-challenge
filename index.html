@@ -603,19 +603,18 @@ function getRankingKey() {
 function saveScore() {
   if (!playerWon) return;
 
-  let name = playerNameInput?.value?.trim();
-
-  if (!name) {
-    alert("Digite seu nome antes de salvar.");
-    return;
-  }
+  let name = playerNameInput.value.trim();
+  if (!name) name = "Anon";
 
   name = name.slice(0, 20);
   const time = getTotalTime();
 
   saveOnlineScore(mode, name, time);
 
+  saveBtn.textContent = "Salvo ✓";
   saveBtn.style.display = "none";
+
+  renderRanking();
   }
 
 /* render ranking (Firebase) */
