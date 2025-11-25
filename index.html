@@ -621,22 +621,37 @@ function renderRanking() {
       return;
     }
 
+    // medalhas
+    const medals = ["🥇", "🥈", "🥉"];
+
     let html = "";
     list
       .sort((a, b) => a.time - b.time)
       .slice(0, 10)
       .forEach((s, i) => {
+
+        const medal = (i < 3) 
+          ? `<span style="font-size:1.3rem">${medals[i]}</span>`
+          : `<span style="opacity:0.5;font-weight:600">${i+1}.</span>`;
+
+        const displayName = s.name || s.key || "Anon";
+
         html += `
-        <div style="display:flex;justify-content:space-between;
+        <div style="display:flex;justify-content:space-between;align-items:center;
           padding:8px 0;border-bottom:1px dashed rgba(11,87,208,0.04)">
-          <div>${i + 1}. ${escapeHtml(s.name)}</div>
+
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${medal}
+            <span>${escapeHtml(displayName)}</span>
+          </div>
+
           <div>${s.time.toFixed(1)}s</div>
         </div>`;
       });
 
     rankingList.innerHTML = html;
   });
-}
+                                       }
 
 /* tiny helper */
 function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -681,18 +696,22 @@ function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&am
   }
 
   // Ler ranking global
-  function loadOnlineRanking(mode, callback) {
-    db.ref("ranking/" + mode)
-      .orderByChild("time")
-      .limitToFirst(10)
-      .once("value", (snapshot) => {
-        const list = [];
-        snapshot.forEach((child) => {
-          list.push(child.val());
-        });
-        callback(list);
+function loadOnlineRanking(mode, callback) {
+  db.ref("ranking/" + mode)
+    .orderByChild("time")
+    .limitToFirst(10)
+    .once("value", (snapshot) => {
+      const list = [];
+
+      snapshot.forEach((child) => {
+        const data = child.val();
+        data.key = child.key; // <-- garante nome caso s.name esteja undefined
+        list.push(data);
       });
-  }
+
+      callback(list);
+    });
+}
 </script>
 </body>
 </html>
