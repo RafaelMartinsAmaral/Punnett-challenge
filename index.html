@@ -673,11 +673,19 @@ function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&am
 
   // Salvar score no ranking
   function saveOnlineScore(mode, name, time) {
-    db.ref("ranking/" + mode).push({
-      name: name,
-      time: time,
-      timestamp: Date.now()
-    });
+  const ref = db.ref("ranking/" + mode + "/" + name);
+
+  ref.set({
+    time: time,
+    timestamp: Date.now()
+  }, (error) => {
+    if (error) {
+      alert("⚠️ Você já salvou seu score antes!");
+    } else {
+      alert("🏆 Score salvo com sucesso!");
+      renderRanking();
+    }
+  });
   }
 
   // Ler ranking global
