@@ -609,6 +609,7 @@ function saveScore() {
 
   saveBtn.textContent = "Salvo ✓";
   setTimeout(() => saveBtn.textContent = "Salvar", 1200);
+  saveBtn.style.display = "none";
 
   renderRanking();
 }
