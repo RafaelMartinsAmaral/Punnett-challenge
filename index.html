@@ -396,7 +396,6 @@ let lives = 3;
 let totalStart = 0;
 let totalEnd = 0;
 let playerWon = false;
-let alreadySaved = false;
 
 /* elements */
 const menuView = document.getElementById('menuView');
@@ -601,27 +600,18 @@ function getRankingKey() {
     : 'punnett_ranking_normal';
 }
 
-let scoreSaved = false;
-
 function saveScore() {
-    if (!playerWon) return;          // só salva se zerou
-    if (scoreSaved) return;          // impede salvar duas vezes
+  if (!playerWon) return;
+  const name = (playerNameInput.value || "Anon").trim().slice(0, 20);
+  const time = getTotalTime();
 
-    const name = (playerNameInput.value || 'Anônimo').trim().slice(0, 20);
-    if (!name) return;
+  saveOnlineScore(mode, name, time);
 
-    const time = getTotalTime();
+  saveBtn.textContent = "Salvo ✓";
+  setTimeout(() => saveBtn.textContent = "Salvar", 1200);
 
-    // Salva no FIREBASE (modo normal / difícil separados)
-    saveScoreToFirebase(mode, name, time)
-        .then(() => {
-            scoreSaved = true;
-            saveBtn.textContent = "Salvo ✓";
-        })
-        .catch(err => {
-            console.error("Erro ao salvar:", err);
-        });
-  }
+  renderRanking();
+}
 
 /* render ranking (Firebase) */
 function renderRanking() {
@@ -672,44 +662,4 @@ function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&am
     storageBucket: "punnnet-challenge.firebasestorage.app",
     messagingSenderId: "476402325418",
     appId: "1:476402325418:web:2fb6f04441195d76893dd3",
-    measurementId: "G-160BZTNGDT"
-  };
-
-  // Inicializa o Firebase usando versão compat
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  /* ========= FUNÇÕES DE RANKING GLOBAL ========= */
-
-  // Salvar score no ranking
-  function saveOnlineScore(mode, name, time){
-    const db = getDatabase();
-
-    const refKey = (mode === 'normal')
-      ? 'ranking_normal'
-      : 'ranking_hard';
-
-    const newRef = push(ref(db, refKey));
-
-    set(newRef, {
-        name: name,
-        time: time
-    });
-  }
-
-  // Ler ranking global
-  function loadOnlineRanking(mode, callback) {
-    db.ref("ranking/" + mode)
-      .orderByChild("time")
-      .limitToFirst(10)
-      .once("value", (snapshot) => {
-        const list = [];
-        snapshot.forEach((child) => {
-          list.push(child.val());
-        });
-        callback(list);
-      });
-  }
-</script>
-</body>
-</html>
+    measu
